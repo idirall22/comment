@@ -21,3 +21,18 @@ func (s *Service) addComment(ctx context.Context, form CForm) (*models.Comment, 
 
 	return c, nil
 }
+
+// Update a comment
+func (s *Service) updateComment(ctx context.Context, form UForm) error {
+
+	if !form.ValidateForm() {
+		return ErrorForm
+	}
+
+	return s.provider.Update(ctx, form.ID, form.Content)
+}
+
+// Delete a comment
+func (s *Service) deleteComment(ctx context.Context, commentID int64) error {
+	return nil
+}
