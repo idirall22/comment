@@ -63,3 +63,12 @@ func testUpdateComment(t *testing.T) {
 		}
 	}
 }
+
+// Test delete a comment
+func testDeleteComment(t *testing.T) {
+	err := testService.deleteComment(context.Background(), 1)
+
+	if err != nil {
+		t.Error("Error should be nil but got:", err)
+	}
+}

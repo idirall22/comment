@@ -34,5 +34,6 @@ func (s *Service) updateComment(ctx context.Context, form UForm) error {
 
 // Delete a comment
 func (s *Service) deleteComment(ctx context.Context, commentID int64) error {
-	return nil
+
+	return s.provider.Delete(ctx, commentID)
 }
