@@ -8,45 +8,62 @@ import (
 	"github.com/idirall22/comment/models"
 )
 
-type postgresProvider struct {
-	db        *sql.DB
-	tableName string
+// PostgresProvider structure
+type PostgresProvider struct {
+	DB        *sql.DB
+	TableName string
 }
 
 // New create a comment
-func (p *postgresProvider) New(ctx context.Context, content string, userID int64, groupID int64) (*models.Comment, error) {
+func (p *PostgresProvider) New(ctx context.Context, content string, userID int64, postID int64) (*models.Comment, error) {
 
 	query := fmt.Sprintf(`
         INSERT INTO %s
-        (content, user_id, group_id)
-        VALUES (%s, %d, %d) RETURNING id, created_at`,
-		p.tableName, content, userID, groupID)
+        (content, user_id, post_id)
+        VALUES ('%s', %d, %d) RETURNING id, created_at`,
+		p.TableName, content, userID, postID)
+
+	stmt, err := p.DB.Prepare(query)
+
+	if err != nil {
+		return nil, err
+	}
 
 	comment := &models.Comment{}
-	err := p.db.QueryRowContext(ctx, query).Scan(comment.ID, comment.CreatedAt)
+	err = stmt.QueryRowContext(ctx).Scan(&comment.ID, &comment.CreatedAt)
 
 	if err != nil {
 		errOut := parseError(err)
 		return nil, errOut
 	}
 
+	comment.Content = content
+	comment.UserID = userID
+	comment.UserID = postID
 	return comment, nil
 }
 
-// Get get a comment
-func (p *postgresProvider) List(ctx context.Context, postID int64, limit, offset uint) ([]*models.Comment, error) {
+// List get a comment
+func (p *PostgresProvider) List(ctx context.Context, postID int64, limit, offset uint) ([]*models.Comment, error) {
 
 	query := fmt.Sprintf(`
-		 SELECT c.id, c.content, c.user_id, c.post_id, c.created_at, u.avatar, u.username
+		 SELECT
+		 c.id, c.content, c.user_id, c.post_id, c.created_at, u.avatar, u.username
 		 FROM
 		 (
 			 SELECT id, content, user_id, post_id, created_at
 			 FROM %s WHERE post_id= %d LIMIT %d OFFSET %d
 		 ) c
 		 LEFT JOIN users u ON u.id = c.user_id
-		`, p.tableName, postID, limit, offset*limit)
+		`, p.TableName, postID, limit, offset*limit)
 
-	rows, err := p.db.QueryContext(ctx, query)
+	stmt, err := p.DB.Prepare(query)
+
+	if err != nil {
+		return nil, err
+	}
+
+	rows, err := stmt.QueryContext(ctx)
 	defer rows.Close()
 
 	if err != nil {
@@ -55,14 +72,14 @@ func (p *postgresProvider) List(ctx context.Context, postID int64, limit, offset
 
 	comments := []*models.Comment{}
 
-	if rows.Next() {
+	for rows.Next() {
 		comment := &models.Comment{}
 		if err := rows.Scan(
 			&comment.ID,
 			&comment.Content,
 			&comment.UserID,
-			&comment.CreatedAt,
 			&comment.PostID,
+			&comment.CreatedAt,
 			&comment.AvatarURL,
 			&comment.Username,
 		); err != nil {
@@ -75,11 +92,17 @@ func (p *postgresProvider) List(ctx context.Context, postID int64, limit, offset
 }
 
 // Update update a comment
-func (p *postgresProvider) Update(ctx context.Context, id int64, content string) error {
+func (p *PostgresProvider) Update(ctx context.Context, id int64, content string) error {
 
-	query := fmt.Sprintf(`UPDATE %s SET(content) VALUES(%s) WHERE id=%d`, p.tableName, content, id)
+	query := fmt.Sprintf(`UPDATE %s SET content='%s' WHERE id=%d`, p.TableName, content, id)
 
-	_, err := p.db.ExecContext(ctx, query)
+	stmt, err := p.DB.Prepare(query)
+
+	if err != nil {
+		return err
+	}
+
+	_, err = stmt.ExecContext(ctx)
 
 	if err != nil {
 		return parseError(err)
@@ -88,9 +111,15 @@ func (p *postgresProvider) Update(ctx context.Context, id int64, content string)
 }
 
 // Delete delete a comment
-func (p *postgresProvider) Delete(ctx context.Context, commentID int64) error {
-	query := fmt.Sprintf(`DELETE FROM %s WHERE id=%d`, p.tableName, commentID)
-	_, err := p.db.ExecContext(ctx, query)
+func (p *PostgresProvider) Delete(ctx context.Context, commentID int64) error {
+	query := fmt.Sprintf(`DELETE FROM %s WHERE id=%d`, p.TableName, commentID)
+
+	stmt, err := p.DB.Prepare(query)
+
+	if err != nil {
+		return err
+	}
+	_, err = stmt.ExecContext(ctx)
 
 	if err != nil {
 		return parseError(err)

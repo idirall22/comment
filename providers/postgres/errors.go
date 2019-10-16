@@ -8,10 +8,14 @@ import (
 )
 
 var (
-	ErrorForeignKey = errors.New("Error foreign key")
-	ErrorNoRow      = errors.New("not exists")
-	ErrorUnique     = errors.New("There is already a comment")
-	ErrorServer     = errors.New("Error server")
+	// ErrorForeignKey when there is not a reference
+	ErrorForeignKey = errors.New("Foreign Key violation")
+	// ErrorNoRow when there comment not exists
+	ErrorNoRow = errors.New("comment not exists")
+	// ErrorUnique when there is already a comment with same id
+	ErrorUnique = errors.New("There is already a comment with this id")
+	// ErrorServer when there is an error
+	ErrorServer = errors.New("Error server")
 )
 
 func parseError(err error) error {
@@ -28,5 +32,5 @@ func parseError(err error) error {
 		}
 	}
 
-	return ErrorServer
+	return err
 }

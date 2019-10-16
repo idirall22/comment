@@ -10,6 +10,6 @@ import (
 type Provider interface {
 	New(context.Context, string, int64, int64) (*models.Comment, error)
 	List(context.Context, int64, uint, uint) ([]*models.Comment, error)
-	Update(context.Context, *models.Comment) error
+	Update(context.Context, int64, string) error
 	Delete(context.Context, int64) error
 }
