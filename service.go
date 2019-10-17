@@ -2,9 +2,13 @@ package comment
 
 import (
 	"database/sql"
+	"time"
 
 	pr "github.com/idirall22/comment/providers/postgres"
 )
+
+// TimeoutRequest time to stop a request
+var TimeoutRequest = time.Second * 5
 
 // Service structure
 type Service struct {

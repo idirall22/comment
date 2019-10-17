@@ -77,7 +77,12 @@ func TestGlobal(t *testing.T) {
 
 	defer closeDB(testService.provider.(*pr.PostgresProvider).DB)
 
-	t.Run("add comment", testAddComment)
-	t.Run("update a comment", testUpdateComment)
-	t.Run("delete a comment", testDeleteComment)
+	// t.Run("add comment", testAddComment)
+	// t.Run("update a comment", testUpdateComment)
+	// t.Run("delete a comment", testDeleteComment)
+
+	t.Run("add a comment handler", testAddCommentHandler)
+	t.Run("update a comment handler", testUpdateCommentHandler)
+	t.Run("delete a comment handler", testDeleteCommentHandler)
+
 }
