@@ -74,6 +74,10 @@ func (s *Service) DeleteComment(w http.ResponseWriter, r *http.Request) {
 
 	commentID, err := parseURL(r)
 	if err != nil {
+
+		message, code := parseError(err)
+		http.Error(w, message, code)
+
 		return
 	}
 
