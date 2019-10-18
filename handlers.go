@@ -65,7 +65,7 @@ func (s *Service) UpdateComment(w http.ResponseWriter, r *http.Request) {
 	ctx, f := context.WithTimeout(r.Context(), TimeoutRequest)
 	defer f()
 
-	err = s.updateComment(ctx, commentID, form)
+	c, err := s.updateComment(ctx, commentID, form)
 
 	if err != nil {
 
@@ -77,6 +77,10 @@ func (s *Service) UpdateComment(w http.ResponseWriter, r *http.Request) {
 
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusNoContent)
+	if err := json.NewEncoder(w).Encode(c); err != nil {
+		http.Error(w, "Error Serveur", http.StatusInternalServerError)
+		return
+	}
 }
 
 // DeleteComment handler
