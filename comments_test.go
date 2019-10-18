@@ -37,17 +37,17 @@ func testAddComment(t *testing.T) {
 // Test update a comment
 func testUpdateComment(t *testing.T) {
 
-	testForms := []UForm{
+	testForms := []CForm{
 		// Form valid
-		{ID: 1, Content: "updated message"},
+		{PostID: 1, Content: "updated message"},
 
 		// Form not valid
-		{ID: 0, Content: ""},
+		{PostID: 0, Content: ""},
 	}
 
 	for i, form := range testForms {
 
-		err := testService.updateComment(context.Background(), form)
+		err := testService.updateComment(context.Background(), 1, form)
 
 		switch i {
 		case 0:
