@@ -21,5 +21,9 @@ func parseURL(r *http.Request) (int64, error) {
 	if e != nil {
 		return 0, ErrorParam
 	}
+
+	if id < 1 {
+		return 0, ErrorParam
+	}
 	return id, nil
 }
