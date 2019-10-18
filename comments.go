@@ -2,8 +2,10 @@ package comment
 
 import (
 	"context"
+	"errors"
 
 	"github.com/idirall22/comment/models"
+	u "github.com/idirall22/user"
 )
 
 // Add a comment
@@ -12,8 +14,13 @@ func (s *Service) addComment(ctx context.Context, form CForm) (*models.Comment, 
 	if !form.ValidateForm() {
 		return nil, ErrorForm
 	}
-	// TODO: get user id from context
-	c, err := s.provider.New(ctx, form.Content, 1, form.PostID)
+
+	userID, ok := ctx.Value(u.IDCtx).(int64)
+	if !ok {
+		return nil, errors.New("Error user id not valid")
+	}
+
+	c, err := s.provider.New(ctx, form.Content, userID, form.PostID)
 
 	if err != nil {
 		return nil, err
@@ -23,17 +30,27 @@ func (s *Service) addComment(ctx context.Context, form CForm) (*models.Comment, 
 }
 
 // Update a comment
-func (s *Service) updateComment(ctx context.Context, id int64, form CForm) error {
+func (s *Service) updateComment(ctx context.Context, id int64, form CForm) (*models.Comment, error) {
 
 	if !form.ValidateForm() {
-		return ErrorForm
+		return nil, ErrorForm
 	}
 
-	return s.provider.Update(ctx, id, form.Content)
+	userID, ok := ctx.Value(u.IDCtx).(int64)
+	if !ok {
+		return nil, errors.New("Error user id not valid")
+	}
+
+	return s.provider.Update(ctx, userID, id, form.Content)
 }
 
 // Delete a comment
 func (s *Service) deleteComment(ctx context.Context, commentID int64) error {
 
-	return s.provider.Delete(ctx, commentID)
+	userID, ok := ctx.Value(u.IDCtx).(int64)
+	if !ok {
+		return errors.New("Error user id not valid")
+	}
+
+	return s.provider.Delete(ctx, userID, commentID)
 }
