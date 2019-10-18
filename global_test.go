@@ -1,12 +1,17 @@
 package comment
 
 import (
+	"bytes"
 	"database/sql"
+	"encoding/json"
 	"fmt"
 	"log"
+	"net/http"
+	"net/http/httptest"
 	"testing"
 
 	pr "github.com/idirall22/comment/providers/postgres"
+	u "github.com/idirall22/user"
 	_ "github.com/lib/pq"
 )
 
@@ -19,6 +24,10 @@ const (
 )
 
 var testService *Service
+
+var testToken string
+var userUsernameTest = "alice"
+var userPasswordTest = "fdpjfd654/*sMLdf"
 
 func cleanDB(db *sql.DB) error {
 	query := fmt.Sprintf(`
@@ -46,6 +55,36 @@ func closeDB(db *sql.DB) {
 	db.Close()
 }
 
+// Get user auth allows to login and get a test token
+func getUserAuth(db *sql.DB) {
+
+	m := make(map[string]string)
+	m["username"] = userUsernameTest
+	m["password"] = userPasswordTest
+
+	b, err := json.Marshal(m)
+	if err != nil {
+		fmt.Println(err)
+		return
+	}
+	body := bytes.NewReader(b)
+
+	serviceUser := u.StartService(db, "users")
+
+	w := httptest.NewRecorder()
+	r, err := http.NewRequest("POST", "/login", body)
+
+	if err != nil {
+		fmt.Println(err)
+		return
+	}
+
+	h := http.HandlerFunc(serviceUser.Login)
+	h.ServeHTTP(w, r)
+
+	testToken = w.Header().Get("Autherization")
+}
+
 // Connect to db test
 func connectDB() error {
 
@@ -66,6 +105,8 @@ func connectDB() error {
 		return err
 	}
 
+	getUserAuth(db)
+
 	testService = StartService(db)
 	return nil
 }
@@ -84,5 +125,4 @@ func TestGlobal(t *testing.T) {
 	t.Run("add a comment handler", testAddCommentHandler)
 	t.Run("update a comment handler", testUpdateCommentHandler)
 	t.Run("delete a comment handler", testDeleteCommentHandler)
-
 }
