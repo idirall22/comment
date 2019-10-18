@@ -47,7 +47,7 @@ func testUpdateComment(t *testing.T) {
 
 	for i, form := range testForms {
 
-		err := testService.updateComment(context.Background(), 1, form)
+		_, err := testService.updateComment(context.Background(), 1, form)
 
 		switch i {
 		case 0:
