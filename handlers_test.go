@@ -8,12 +8,13 @@ import (
 	"testing"
 
 	"github.com/gorilla/mux"
+	u "github.com/idirall22/user"
 )
 
 func makeRequestTest(r *http.Request, f http.HandlerFunc) *httptest.ResponseRecorder {
 
 	w := httptest.NewRecorder()
-	h := http.HandlerFunc(f)
+	h := http.HandlerFunc(u.AuthnticateUser(f))
 	h.ServeHTTP(w, r)
 
 	return w
@@ -22,7 +23,6 @@ func makeRequestTest(r *http.Request, f http.HandlerFunc) *httptest.ResponseReco
 func testAddCommentHandler(t *testing.T) {
 
 	testData := CForm{Content: "comment test", PostID: 1}
-
 	b, err := json.Marshal(testData)
 	if err != nil {
 		t.Error(err)
@@ -31,10 +31,11 @@ func testAddCommentHandler(t *testing.T) {
 
 	body := bytes.NewReader(b)
 
-	r, err := http.NewRequest("POST", "/add_comment", body)
+	r, err := http.NewRequest("POST", "/comment", body)
 	if err != nil {
 
 	}
+	r.Header.Add("Authorization", testToken)
 	res := makeRequestTest(r, testService.AddComment)
 
 	if res.Code != http.StatusCreated {
@@ -43,7 +44,8 @@ func testAddCommentHandler(t *testing.T) {
 }
 
 func testUpdateCommentHandler(t *testing.T) {
-	testData := UForm{Content: "comment test", ID: 1}
+
+	testData := CForm{Content: "comment updated", PostID: 1}
 
 	b, err := json.Marshal(testData)
 	if err != nil {
@@ -53,12 +55,20 @@ func testUpdateCommentHandler(t *testing.T) {
 
 	body := bytes.NewReader(b)
 
-	r, err := http.NewRequest("POST", "/update_comment", body)
+	res := httptest.NewRecorder()
+
+	r, err := http.NewRequest("PUT", "/comment/1", body)
 	if err != nil {
 
 	}
 
-	res := makeRequestTest(r, testService.UpdateComment)
+	r.Header.Add("Authorization", testToken)
+
+	mux.SetURLVars(r, map[string]string{"id": "1"})
+
+	router := mux.NewRouter()
+	router.HandleFunc("/comment/{id}", u.AuthnticateUser(testService.UpdateComment)).Methods("PUT")
+	router.ServeHTTP(res, r)
 
 	if res.Code != http.StatusNoContent {
 		t.Errorf("Status code should be %d but got %d", res.Code, http.StatusNoContent)
@@ -67,18 +77,20 @@ func testUpdateCommentHandler(t *testing.T) {
 
 func testDeleteCommentHandler(t *testing.T) {
 
-	r, err := http.NewRequest("POST", "/delete/1", nil)
+	res := httptest.NewRecorder()
+	r, err := http.NewRequest("DELETE", "/comment/1", nil)
 
 	if err != nil {
 		t.Error(err)
 		return
 	}
+
+	r.Header.Add("Authorization", testToken)
+
 	mux.SetURLVars(r, map[string]string{"id": "1"})
 
-	res := httptest.NewRecorder()
-
 	router := mux.NewRouter()
-	router.HandleFunc("/delete/{id}", testService.DeleteComment).Methods("POST")
+	router.HandleFunc("/comment/{id}", u.AuthnticateUser(testService.DeleteComment)).Methods("DELETE")
 	router.ServeHTTP(res, r)
 
 	if res.Code != http.StatusNoContent {

@@ -42,8 +42,18 @@ func (s *Service) AddComment(w http.ResponseWriter, r *http.Request) {
 
 // UpdateComment handler
 func (s *Service) UpdateComment(w http.ResponseWriter, r *http.Request) {
-	form := UForm{}
-	err := json.NewDecoder(r.Body).Decode(&form)
+
+	commentID, err := parseURL(r)
+	if err != nil {
+
+		message, code := parseError(err)
+		http.Error(w, message, code)
+
+		return
+	}
+
+	form := CForm{}
+	err = json.NewDecoder(r.Body).Decode(&form)
 
 	defer r.Body.Close()
 
@@ -55,7 +65,7 @@ func (s *Service) UpdateComment(w http.ResponseWriter, r *http.Request) {
 	ctx, f := context.WithTimeout(r.Context(), TimeoutRequest)
 	defer f()
 
-	err = s.updateComment(ctx, form)
+	err = s.updateComment(ctx, commentID, form)
 
 	if err != nil {
 
