@@ -92,27 +92,35 @@ func (p *PostgresProvider) List(ctx context.Context, postID int64, limit, offset
 }
 
 // Update update a comment
-func (p *PostgresProvider) Update(ctx context.Context, id int64, content string) error {
+func (p *PostgresProvider) Update(ctx context.Context, userID, id int64, content string) (*models.Comment, error) {
 
-	query := fmt.Sprintf(`UPDATE %s SET content='%s' WHERE id=%d`, p.TableName, content, id)
+	query := fmt.Sprintf(`
+		UPDATE %s SET content='%s' WHERE user_id=%d AND id=%d
+		RETURNING id, content, post_id
+		`, p.TableName, content, userID, id)
 
 	stmt, err := p.DB.Prepare(query)
 
 	if err != nil {
-		return err
+		return nil, err
 	}
 
-	_, err = stmt.ExecContext(ctx)
+	comment := &models.Comment{}
+	err = stmt.QueryRowContext(ctx).Scan(
+		&comment.ID,
+		&comment.Content,
+		&comment.PostID,
+	)
 
 	if err != nil {
-		return parseError(err)
+		return nil, parseError(err)
 	}
-	return nil
+	return comment, nil
 }
 
 // Delete delete a comment
-func (p *PostgresProvider) Delete(ctx context.Context, commentID int64) error {
-	query := fmt.Sprintf(`DELETE FROM %s WHERE id=%d`, p.TableName, commentID)
+func (p *PostgresProvider) Delete(ctx context.Context, userID, commentID int64) error {
+	query := fmt.Sprintf(`DELETE FROM %s WHERE id=%d AND user_id=%d`, p.TableName, commentID, userID)
 
 	stmt, err := p.DB.Prepare(query)
 

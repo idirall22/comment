@@ -105,7 +105,7 @@ func testList(t *testing.T) {
 
 // Test update
 func testUpdate(t *testing.T) {
-	err := provider.Update(context.Background(), 1, "updated message")
+	_, err := provider.Update(context.Background(), 1, 1, "updated message")
 
 	if err != nil {
 		t.Error("Error should be nil but got:", err)
@@ -115,7 +115,7 @@ func testUpdate(t *testing.T) {
 
 // Test delete
 func testDelete(t *testing.T) {
-	err := provider.Delete(context.Background(), 1)
+	err := provider.Delete(context.Background(), 1, 1)
 	if err != nil {
 		t.Error("Error should be nil but got:", err)
 		return
