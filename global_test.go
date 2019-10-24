@@ -82,7 +82,7 @@ func getUserAuth(db *sql.DB) {
 	h := http.HandlerFunc(serviceUser.Login)
 	h.ServeHTTP(w, r)
 
-	testToken = w.Header().Get("Autherization")
+	testToken = w.Header().Get("Authorization")
 }
 
 // Connect to db test
