@@ -4,17 +4,10 @@ import (
 	"context"
 
 	"github.com/idirall22/comment/models"
-	"github.com/idirall22/utilities"
 )
 
 // Add a comment
-func (s *Service) addComment(ctx context.Context, form CForm) (*models.Comment, error) {
-
-	userID, err := utilities.GetUserIDFromContext(ctx)
-
-	if err != nil {
-		return nil, err
-	}
+func (s *Service) addComment(ctx context.Context, userID int64, form CForm) (*models.Comment, error) {
 
 	if !form.ValidateForm() {
 		return nil, ErrorForm
@@ -30,13 +23,7 @@ func (s *Service) addComment(ctx context.Context, form CForm) (*models.Comment, 
 }
 
 // Update a comment
-func (s *Service) updateComment(ctx context.Context, id int64, form CForm) (*models.Comment, error) {
-
-	userID, err := utilities.GetUserIDFromContext(ctx)
-
-	if err != nil {
-		return nil, err
-	}
+func (s *Service) updateComment(ctx context.Context, userID, id int64, form CForm) (*models.Comment, error) {
 
 	if !form.ValidateForm() {
 		return nil, ErrorForm
@@ -46,13 +33,7 @@ func (s *Service) updateComment(ctx context.Context, id int64, form CForm) (*mod
 }
 
 // Delete a comment
-func (s *Service) deleteComment(ctx context.Context, commentID int64) error {
-
-	userID, err := utilities.GetUserIDFromContext(ctx)
-
-	if err != nil {
-		return err
-	}
+func (s *Service) deleteComment(ctx context.Context, userID, commentID int64) error {
 
 	return s.provider.Delete(ctx, userID, commentID)
 }
