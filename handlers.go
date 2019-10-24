@@ -4,13 +4,23 @@ import (
 	"context"
 	"encoding/json"
 	"net/http"
+
+	"github.com/idirall22/utilities"
 )
 
 // AddComment handler
 func (s *Service) AddComment(w http.ResponseWriter, r *http.Request) {
 
+	userID, err := utilities.GetUserIDFromContext(r.Context())
+
+	if err != nil {
+
+		http.Error(w, err.Error(), http.StatusUnauthorized)
+		return
+	}
+
 	form := CForm{}
-	err := json.NewDecoder(r.Body).Decode(&form)
+	err = json.NewDecoder(r.Body).Decode(&form)
 
 	defer r.Body.Close()
 
@@ -22,7 +32,7 @@ func (s *Service) AddComment(w http.ResponseWriter, r *http.Request) {
 	ctx, f := context.WithTimeout(r.Context(), TimeoutRequest)
 	defer f()
 
-	c, err := s.addComment(ctx, form)
+	c, err := s.addComment(ctx, userID, form)
 
 	if err != nil {
 
@@ -43,7 +53,26 @@ func (s *Service) AddComment(w http.ResponseWriter, r *http.Request) {
 // UpdateComment handler
 func (s *Service) UpdateComment(w http.ResponseWriter, r *http.Request) {
 
-	commentID, err := parseURL(r)
+	userID, err := utilities.GetUserIDFromContext(r.Context())
+
+	if err != nil {
+
+		http.Error(w, err.Error(), http.StatusUnauthorized)
+		return
+	}
+
+	commentID, err := utilities.GetURLID(r, "")
+
+	if err != nil {
+
+		message, code := parseError(err)
+		http.Error(w, message, code)
+
+		return
+	}
+
+	err = utilities.ValidateID(commentID)
+
 	if err != nil {
 
 		message, code := parseError(err)
@@ -53,6 +82,7 @@ func (s *Service) UpdateComment(w http.ResponseWriter, r *http.Request) {
 	}
 
 	form := CForm{}
+
 	err = json.NewDecoder(r.Body).Decode(&form)
 
 	defer r.Body.Close()
@@ -65,7 +95,7 @@ func (s *Service) UpdateComment(w http.ResponseWriter, r *http.Request) {
 	ctx, f := context.WithTimeout(r.Context(), TimeoutRequest)
 	defer f()
 
-	c, err := s.updateComment(ctx, commentID, form)
+	c, err := s.updateComment(ctx, userID, commentID, form)
 
 	if err != nil {
 
@@ -77,6 +107,7 @@ func (s *Service) UpdateComment(w http.ResponseWriter, r *http.Request) {
 
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusNoContent)
+
 	if err := json.NewEncoder(w).Encode(c); err != nil {
 		http.Error(w, "Error Serveur", http.StatusInternalServerError)
 		return
@@ -86,7 +117,26 @@ func (s *Service) UpdateComment(w http.ResponseWriter, r *http.Request) {
 // DeleteComment handler
 func (s *Service) DeleteComment(w http.ResponseWriter, r *http.Request) {
 
-	commentID, err := parseURL(r)
+	userID, err := utilities.GetUserIDFromContext(r.Context())
+
+	if err != nil {
+
+		http.Error(w, err.Error(), http.StatusUnauthorized)
+		return
+	}
+
+	commentID, err := utilities.GetURLID(r, "")
+
+	if err != nil {
+
+		message, code := parseError(err)
+		http.Error(w, message, code)
+
+		return
+	}
+
+	err = utilities.ValidateID(commentID)
+
 	if err != nil {
 
 		message, code := parseError(err)
@@ -98,7 +148,7 @@ func (s *Service) DeleteComment(w http.ResponseWriter, r *http.Request) {
 	ctx, f := context.WithTimeout(r.Context(), TimeoutRequest)
 	defer f()
 
-	err = s.deleteComment(ctx, commentID)
+	err = s.deleteComment(ctx, userID, commentID)
 
 	if err != nil {
 
