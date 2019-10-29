@@ -3,6 +3,7 @@ package comment
 import (
 	"context"
 	"encoding/json"
+	"fmt"
 	"net/http"
 
 	"github.com/idirall22/utilities"
@@ -160,4 +161,41 @@ func (s *Service) DeleteComment(w http.ResponseWriter, r *http.Request) {
 
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusNoContent)
+}
+
+// SubscribeCommentStream endpoint
+func (s *Service) SubscribeCommentStream(w http.ResponseWriter, r *http.Request) {
+	flusher, ok := w.(http.Flusher)
+
+	if !ok {
+		http.Error(w, "Error streaming not supported", http.StatusBadRequest)
+		return
+	}
+
+	userID, err := utilities.GetUserIDFromContext(r.Context())
+
+	if err != nil {
+
+		http.Error(w, err.Error(), http.StatusUnauthorized)
+		return
+	}
+
+	cc := s.subscribeClientStream(context.Background(), userID)
+
+	w.Header().Set("Cache-Control", "no-cache")
+	w.Header().Set("Connection", "keep-live")
+	w.Header().Set("Content-Type", "text/event-stream; charset=utf-8")
+
+	for comment := range cc.Comment {
+
+		b, err := json.Marshal(comment)
+
+		if err != nil {
+			fmt.Fprintf(w, "Error/data %v\n\n", err)
+			return
+		}
+		fmt.Fprintf(w, "%s\n\n", b)
+		flusher.Flush()
+	}
+
 }
