@@ -13,8 +13,8 @@ type Service struct {
 }
 
 // StartService comment
-func StartService(db *sql.DB) *Service {
+func StartService(db *sql.DB, tableName string) *Service {
 
-	p := &pr.PostgresProvider{DB: db, TableName: "comments"}
+	p := &pr.PostgresProvider{DB: db, TableName: tableName}
 	return &Service{provider: p}
 }
