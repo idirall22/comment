@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"testing"
 
+	br "github.com/idirall22/comment/brokers/memory"
 	pr "github.com/idirall22/comment/providers/postgres"
 	"github.com/idirall22/utilities"
 	_ "github.com/lib/pq"
@@ -49,11 +50,15 @@ func TestGlobal(t *testing.T) {
 	defer utilities.CloseDataBaseTest(db)
 
 	provider := &pr.PostgresProvider{DB: db, TableName: tableName}
-	testService = &Service{provider: provider}
+	broker := &br.Memory{}
+
+	testService = &Service{provider: provider, broker: broker}
 
 	testToken = utilities.LoginUser(db)
 
 	t.Run("add a comment handler", testAddCommentHandler)
 	t.Run("update a comment handler", testUpdateCommentHandler)
 	t.Run("delete a comment handler", testDeleteCommentHandler)
+	t.Run("stream comment", testSubscribeClientStream)
+
 }
