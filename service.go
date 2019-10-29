@@ -9,6 +9,7 @@ import (
 // Service structure
 type Service struct {
 	provider Provider
+	broker   Broker
 }
 
 // StartService comment
