@@ -13,3 +13,10 @@ type Comment struct {
 	CreatedAt time.Time  `json:"created_at"`
 	DeletedAt *time.Time `json:"deleted_at"`
 }
+
+// ClientStream structure
+type ClientStream struct {
+	UserID  int64
+	GroupID int64
+	Comment chan *Comment
+}
