@@ -49,6 +49,9 @@ func (s *Service) AddComment(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "Error Serveur", http.StatusInternalServerError)
 		return
 	}
+
+	go s.subscribeClientStream(ctx, userID, c.PostID)
+	go s.broker.Brodcast(c)
 }
 
 // UpdateComment handler
