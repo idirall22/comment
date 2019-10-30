@@ -35,7 +35,10 @@ func (m *Memory) RemoveClient(c *models.ClientStream) {
 func (m *Memory) Brodcast(comment *models.Comment) {
 
 	for client := range m.clients {
-		client.Comment <- comment
+
+		if comment.UserID != client.UserID && comment.PostID == client.PostID {
+			client.Comment <- comment
+		}
 	}
 }
 
