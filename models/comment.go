@@ -17,6 +17,6 @@ type Comment struct {
 // ClientStream structure
 type ClientStream struct {
 	UserID  int64
-	GroupID int64
+	PostID  int64
 	Comment chan *Comment
 }
