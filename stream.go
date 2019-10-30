@@ -7,9 +7,13 @@ import (
 )
 
 // RegisterClientStream register a user to comment stream
-func (s *Service) subscribeClientStream(ctx context.Context, userID int64) *models.ClientStream {
+func (s *Service) subscribeClientStream(ctx context.Context, userID, postID int64) *models.ClientStream {
 
-	cs := &models.ClientStream{Comment: make(chan *models.Comment), UserID: userID}
+	cs := &models.ClientStream{
+		Comment: make(chan *models.Comment),
+		UserID:  userID,
+		PostID:  postID,
+	}
 
 	s.broker.NewClient(cs)
 
