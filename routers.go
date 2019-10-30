@@ -6,13 +6,13 @@ import (
 )
 
 // Router comment endpoints
-func (s *Service) Router() *mux.Router {
-	r := &mux.Router{}
+func (s *Service) Router(r *mux.Router) {
 
-	r.HandleFunc("/comments", u.AuthnticateUser(s.AddComment)).Methods("POST")
-	r.HandleFunc("/comments/{id}", u.AuthnticateUser(s.UpdateComment)).Methods("PUT")
-	r.HandleFunc("/comments/{id}", u.AuthnticateUser(s.DeleteComment)).Methods("DELETE")
-	r.HandleFunc("/comments/stream", u.AuthnticateUser(s.SubscribeCommentStream))
+	sr := r.PathPrefix("/comments").Subrouter()
 
-	return r
+	sr.HandleFunc("/", u.AuthnticateUser(s.AddComment)).Methods("POST")
+	sr.HandleFunc("/{id}", u.AuthnticateUser(s.UpdateComment)).Methods("PUT")
+	sr.HandleFunc("/{id}", u.AuthnticateUser(s.DeleteComment)).Methods("DELETE")
+	sr.HandleFunc("/stream", u.AuthnticateUser(s.SubscribeCommentStream))
+
 }
