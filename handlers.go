@@ -50,7 +50,7 @@ func (s *Service) AddComment(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	go s.subscribeClientStream(ctx, userID, c.PostID)
+	go s.subscribeClientStream(ctx, userID)
 	go s.broker.Brodcast(c)
 }
 

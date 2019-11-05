@@ -24,7 +24,6 @@ func makeRequestTest(r *http.Request, f http.HandlerFunc) *httptest.ResponseReco
 
 // Test addCommentHandler
 func testAddCommentHandler(t *testing.T) {
-
 	var body io.Reader
 
 	for i := 0; i < 3; i++ {

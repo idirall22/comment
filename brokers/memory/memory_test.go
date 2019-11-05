@@ -18,7 +18,6 @@ func TestBroker(t *testing.T) {
 		c := &models.ClientStream{
 			Comment: make(chan *models.Comment, 1),
 			UserID:  int64(i),
-			PostID:  1,
 		}
 
 		testMemory.NewClient(c)

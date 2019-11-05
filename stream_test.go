@@ -15,7 +15,7 @@ func testSubscribeClientStream(t *testing.T) {
 
 	clientsLenght := testService.broker.(*memory.Memory).GetClientsLength
 
-	testService.subscribeClientStream(ctx, 1)
+	testService.subscribeClientStream(ctx, 1, 1)
 
 	if clientsLenght() != 1 {
 		t.Errorf("Clients length should be 1 but got %d", clientsLenght())

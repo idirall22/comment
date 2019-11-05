@@ -59,6 +59,6 @@ func TestGlobal(t *testing.T) {
 	t.Run("add a comment handler", testAddCommentHandler)
 	t.Run("update a comment handler", testUpdateCommentHandler)
 	t.Run("delete a comment handler", testDeleteCommentHandler)
-	t.Run("stream comment", testSubscribeClientStream)
+	// t.Run("stream comment", testSubscribeClientStream)
 
 }

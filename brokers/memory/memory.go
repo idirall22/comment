@@ -36,7 +36,7 @@ func (m *Memory) Brodcast(comment *models.Comment) {
 
 	for client := range m.clients {
 
-		if comment.UserID != client.UserID && comment.PostID == client.PostID {
+		if comment.UserID != client.UserID {
 			client.Comment <- comment
 		}
 	}
